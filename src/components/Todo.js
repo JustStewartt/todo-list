@@ -9,8 +9,13 @@ class Todo extends React.Component {
       <div className={`list-item ${this.props.done ? 'done' : ''}`}>
         {this.props.title}
         <div className="is-pulled-right">
-          <Checkmark done={this.props.done} />
-          <button className="delete is-pulled-right" />
+          <Checkmark 
+          done={this.props.done}
+          toggleFn={this.props.toggleFn}           
+          />
+          <button className="delete is-pulled-right"
+          onClick={e => this.props.deleteFn(e)}
+          />
         </div>
       </div>
     )
