@@ -37,6 +37,18 @@ class App extends React.Component {
     this.setState({todos})
   }
 
+  addTask = (title) => {
+    const exists = this.state.todos.find(e => title === e.title);
+    if (exists) {
+      alert(`La tarea "${title}" ya existe!`);
+      return
+    }
+
+    this.setState({
+      todos : this.state.todos.concat([{ title, done: false }])
+    });
+  }
+
   render() {
     return (
       <div className="wrapper">
@@ -47,7 +59,7 @@ class App extends React.Component {
           toggleFn={this.handleClickToggleDone}
           deleteFn={this.handleClickDelete}
           />
-          <Form />
+          <Form addTaskFn={this.addTask} />
           {
             this.state.showButton &&
               <button onClick={this.handleClick} className="button init">
