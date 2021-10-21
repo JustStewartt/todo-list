@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Todo from './Todo';
 import '../css/TodoList.css';
 
@@ -10,9 +11,9 @@ function TodoList(props) {
           <Todo
             key={i}
             done={e.done}
-            title={e.title}
-            deleteFn={e => props.deleteFn(e, i)}
-            toggleFn={e => props.toggleFn(e, i)}
+            title={e.title} 
+            deleteFn={ev => props.deleteFn(ev, e.title)}
+            toggleFn={ev => props.toggleFn(ev, e.title)}
           />
         )
       }
@@ -20,5 +21,14 @@ function TodoList(props) {
   )
 };
 
+TodoList.propTypes = {
+  tasks: PropTypes.array,
+  deleteFn: PropTypes.func.isRequired,
+  toggleFn: PropTypes.func.isRequired
+}
+
+TodoList.defaultProps = {
+  tasks: []
+}
 
 export default TodoList;

@@ -4,7 +4,10 @@ import '../css/Checkmark.css';
 
 function Checkmark(props) {
   return (
-    <span className={`checkmark ${props.done ? 'dimmed': ''}`}  onClick={props.toggleFn}>
+    <span 
+      className={`checkmark ${props.done ? 'dimmed': ''}`}
+      onClick={props.toggleFn}
+    >
       <div className="checkmark_stem"/>
       <div className="checkmark_kick"/>
     </span>
@@ -12,7 +15,8 @@ function Checkmark(props) {
 };
 
 Checkmark.propTypes = {
-  done: PropTypes.bool
+  done: PropTypes.bool,
+  toggleFn: PropTypes.func.isRequired
 }
 
 export default Checkmark
