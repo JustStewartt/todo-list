@@ -1,7 +1,8 @@
 import React from 'react';
-import Header from './Header';
-import Form from './Form';
-import TodoList from './TodoList';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import Home from './Home';
+import TodoDetails from './TodoDetails';
+import NotFound from './NotFound';
 import '../css/App.css';
 
 const URL = "http://localhost:4000/todos";
@@ -24,21 +25,41 @@ function App() {
     getData();
   }, []);
 
-  const handleClickDelete = (e, title) => {
-    const t = [...todos];
-    const index = t.findIndex(e => e.title === title);
-    if (-1 < index) t.splice(index, 1);
+  const handleClickDelete = async (e, title) => {
+    // Otener el índice del elemento que se le hizo click
+    const el = todos.find(e => e.title === title)
+    // Verificar que en efecto exista en el `todos`
+    if (el === undefined) return
 
-    setTodos(t);
+    // Cambio en el servidor
+    const config = {
+      url: `${URL}/${el.id}`,
+      method: "DELETE"
+    };
+
+    try {
+      const response = await goToBackend(config)
+
+      if (!response.ok) throw new Error("Response not ok");
+
+      // UI
+      const t = [...todos];
+      const index = t.findIndex(element => element.id === el.id);
+      t.splice(index, 1);
+
+      setTodos(t);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  const changeProperty = (config, property, value) => {
+  const goToBackend = (config, data) => {
     return fetch(config.url, {
       method: config.method,
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ [property]: value })
+      body: data ? JSON.stringify(data) : null
     })
   }
 
@@ -57,7 +78,7 @@ function App() {
     };
 
     try {
-      const response = await changeProperty(config, "done", value)
+      const response = await goToBackend(config, {done: value})
 
       if (!response.ok) throw new Error("Response not ok");
 
@@ -72,7 +93,7 @@ function App() {
     }
   }
 
-  const addTask = (title) => {
+  const addTask = async (title) => {
     const exists = todos.find(e => title === e.title);
 
     if (exists) {
@@ -80,26 +101,58 @@ function App() {
       return
     }
 
-    setTodos(todos.concat([{ title, done: false }]));
+    // Cambio en el servidor
+    const config = {
+      url: URL,
+      method: "POST"
+    };
+
+    const data = {
+      title: title,
+      done: false,
+    }; 
+
+    try {
+      const response = await goToBackend(config, data);
+      if (!response.ok) throw new Error("Response not ok");
+
+      const todo = await response.json();
+
+      // UI
+      setTodos(todos.concat([todo]));
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   const filtered = todos.filter(e => !e.done || e.done === show);
 
   return (
     <div className="wrapper">
-      <div className="card frame">
-        <Header
-          counter={filtered.length}
-          show={show}
-          toggleDone={setShow}
-        />
-        <TodoList 
-          tasks={filtered}
-          toggleFn={handleClickToggleDone}
-          deleteFn={handleClickDelete}
-        />
-        <Form addTaskFn={addTask} />
-      </div>
+      <BrowserRouter>
+        <div className="card frame">
+          <Switch>
+            <Route path="/" exact render={props =>
+              <Home 
+                {...props}
+                filtered={filtered}
+                show={show}
+                setShow={setShow}
+                handleClickToggleDone={handleClickToggleDone}
+                handleClickDelete={handleClickDelete}
+                addTask={addTask}
+              />
+            } />
+            <Route path="/details/:id" render={props =>
+              <TodoDetails 
+                {...props}
+                url={URL}
+              />
+            } />
+            <Route component={NotFound} />
+          </Switch>
+        </div>
+      </BrowserRouter>
     </div>
   )
 }
